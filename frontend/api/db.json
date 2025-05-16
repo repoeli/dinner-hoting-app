@@ -1,0 +1,15 @@
+{
+  "dinners": [
+    {
+      "id": 1,
+      "title": "Pizza & Jazz",
+      "date": "2023-09-14",
+      "time": "18:00",
+      "description": "Join us for a night of Pizza and Jazz! After dinner we'll continue at BRB bar",
+      "price": 25,
+      "maxGuests": 12,
+      "image": "https://source.unsplash.com/random/?pizza"
+    }
+  ],
+  "reservations": []
+}
