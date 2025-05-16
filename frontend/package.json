@@ -1,9 +1,6 @@
 {
   "dependencies": {
-    "axios": "^1.9.0",
-    "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "http-proxy-middleware": "^2.0.9"
+    "axios": "^1.9.0"
   },
   "scripts": {
     "start": "http-server -p 8080 --cors",
@@ -11,5 +8,12 @@
     "proxy": "node proxy.js",
     "dev": "concurrently \"npm run api\" \"npm run start\"",
     "start-all": "./start-services.sh"
+  },
+  "devDependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "http-proxy-middleware": "^3.0.5",
+    "http-server": "^14.1.1",
+    "json-server": "^1.0.0-beta.3"
   }
 }

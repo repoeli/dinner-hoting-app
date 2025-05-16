@@ -7,8 +7,8 @@ const API_URLS = {
 };
 
 // We'll try all of these URLs in sequence until one works
-// For now, we'll start with the direct connection
-const API_URL = API_URLS.direct;
+// Using the proxy server to avoid CORS issues
+const API_URL = API_URLS.proxyServer;
 let currentUser = { id: 1, name: 'Demo User' }; // Mock user for demo purposes
 
 // Configure Axios defaults for better error handling
@@ -298,14 +298,30 @@ function renderUserDinners(dinners) {
             <img src="${dinner.image}" class="dinner-image" alt="${dinner.title}" 
                  onerror="this.src='https://images.unsplash.com/photo-1555939594-58d7cb561ad1'">
             <div class="dinner-info">
-                <h3 class="dinner-title">${dinner.title}</h3>
-                <div class="dinner-time">
-                    ${formatDate(dinner.date)}, ${formatTime(dinner.time)} - ${getEndTime(dinner.time)}
-                </div>
-                <p class="dinner-description">${dinner.description}</p>
-                <div class="d-flex justify-content-between align-items-center mt-2">
-                    <span class="dinner-price">$${dinner.price}</span>
-                    <span class="badge bg-info">${getRelativeDate(dinner.date)}</span>
+                <div class="dinner-card-content">
+                    <div>
+                        <h3 class="dinner-title">${dinner.title}</h3>
+                        <div class="dinner-meta">
+                            <span><i class="fas fa-calendar"></i> ${formatDate(dinner.date)}</span>
+                            <span><i class="fas fa-clock"></i> ${formatTime(dinner.time)}</span>
+                            <span class="badge bg-${dinner.category === 'vegetarian' || dinner.category === 'vegan' ? 'success' : 'secondary'} rounded-pill">
+                                ${dinner.category}
+                            </span>
+                        </div>
+                        <p class="dinner-description mt-2">${dinner.description}</p>
+                    </div>
+                    <div class="dinner-footer">
+                        <div class="dinner-price-tag">$${dinner.price} per person</div>
+                        <div class="dinner-host">
+                            <div class="host-avatar">
+                                ${dinner.hostName.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div>
+                                <div class="small">Hosted by</div>
+                                <div class="fw-medium">${dinner.hostName}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -548,7 +564,7 @@ async function showDinnerDetail(dinnerId) {
                     <button id="backButton" class="btn btn-link text-light">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h1 class="navbar-brand mb-0">Buber <span class="accent">Dinner</span></h1>
+                    <h1 class="navbar-brand mb-0">Hosting Your <span class="accent">Dinner</span></h1>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <h2 class="dinner-detail-title">${dinner.title}</h2>

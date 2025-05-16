@@ -59,11 +59,56 @@
       "isPublic": true,
       "category": "casual",
       "createdAt": "2025-05-14T09:45:00.000Z"
+    },
+    {
+      "id": 1747364838088,
+      "title": "Pizza & Jazz",
+      "description": "Join us for a night of Pizza and Jazz! After dinner we will continue the fun at the BRB bar.",
+      "price": 18,
+      "maxGuests": 6,
+      "hostId": 1,
+      "hostName": "Demo User",
+      "image": "https://images.unsplash.com/photo-1600028068383-ea11a7a101f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NTAyNTV8MHwxfHNlYXJjaHw0fHxJdGFsaWFuJTIwcGl6emF8ZW58MHx8fHwxNzQ3MzU4NDA4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "isPublic": true,
+      "category": "casual",
+      "createdAt": "2025-05-16T03:07:18.088Z",
+      "date": "2025-05-17",
+      "time": "04:05"
+    },
+    {
+      "id": 1747382051097,
+      "title": "Pizza & Jazz",
+      "description": "Join us for a night of Pizza and Jazz! After dinner we'll continue at BRB bar 🍻",
+      "price": 25,
+      "maxGuests": 12,
+      "hostId": 1,
+      "hostName": "Demo User",
+      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591",
+      "isPublic": true,
+      "category": "casual",
+      "createdAt": "2025-05-16T07:54:11.097Z",
+      "date": "2025-05-20",
+      "time": "18:00"
+    },
+    {
+      "id": 1747382213187,
+      "title": "Pizza & Jazz",
+      "description": "Join us for a night of Pizza and Jazz! After dinner we'll continue at BRB bar 🍻",
+      "price": 25,
+      "maxGuests": 12,
+      "hostId": 1,
+      "hostName": "Demo User",
+      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591",
+      "isPublic": true,
+      "category": "casual",
+      "createdAt": "2025-05-16T07:56:53.187Z",
+      "date": "2025-05-20",
+      "time": "18:00"
     }
   ],
   "reservations": [
     {
-      "id": 1,
+      "id": "1",
       "dinnerId": 1,
       "guestName": "Mike",
       "seats": 1,
@@ -71,7 +116,7 @@
       "createdAt": "2025-05-13T15:30:00.000Z"
     },
     {
-      "id": 2,
+      "id": "2",
       "dinnerId": 1,
       "guestName": "Maria",
       "seats": 1,
@@ -79,7 +124,7 @@
       "createdAt": "2025-05-13T12:45:00.000Z"
     },
     {
-      "id": 3,
+      "id": "3",
       "dinnerId": 1,
       "guestName": "Josh",
       "seats": 1,
@@ -87,12 +132,28 @@
       "createdAt": "2025-05-14T09:20:00.000Z"
     },
     {
-      "id": 4,
+      "id": "4",
       "dinnerId": 2,
       "guestName": "Alex",
       "seats": 2,
       "notes": "One person has a nut allergy",
       "createdAt": "2025-05-14T14:10:00.000Z"
+    },
+    {
+      "id": "4c9a",
+      "dinnerId": 2,
+      "guestName": "Elias ",
+      "seats": 3,
+      "notes": "Gluten Free ",
+      "createdAt": "2025-05-16T07:52:00.287Z"
+    },
+    {
+      "id": "f905",
+      "dinnerId": 1,
+      "guestName": "Elias ",
+      "seats": 9,
+      "notes": "Glutton Free ",
+      "createdAt": "2025-05-16T07:53:43.159Z"
     }
   ]
 }
