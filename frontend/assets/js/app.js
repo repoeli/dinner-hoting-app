@@ -15,8 +15,6 @@ let currentUser = { id: 1, name: 'Demo User' }; // Mock user for demo purposes
 axios.defaults.timeout = 10000;
 axios.defaults.headers.common['Accept'] = 'application/json';
 
-// Configure Axios for error handling
-
 // App state
 const appState = {
     currentScreen: 'home', // 'home' or 'detail'
@@ -26,54 +24,119 @@ const appState = {
     filter: 'all'
 };
 
+/**
+ * Main entry point for the application
+ * Sets up the application by:
+ * - Initializing event listeners
+ * - Setting up UI scroll effects
+ * - Testing API connectivity and loading dinner data
+ */
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
+    setupScrollEffects();
     
-    // Show loading indicator
-    document.getElementById('dinnersContainer').innerHTML = `
-        <div class="loading-container">
-            <div class="loading-spinner"></div>
-            <div>Loading dinners...</div>
-        </div>
-    `;
-    
-    // First check if API is accessible
-    console.log('Testing API availability...');
-    fetch(`${API_URL}/dinners`)
-        .then(response => {
-            console.log('API test response:', response.status);
-            if (!response.ok) throw new Error('API not accessible');
-            return response.json();
-        })
-        .then(data => {
-            console.log('API test successful, received data:', data);
-            // API is working, load data properly
-            setTimeout(loadDinners, 300);
-        })
-        .catch(error => {
-            console.error('API test failed:', error);
-            // Show error message to user
-            document.getElementById('dinnersContainer').innerHTML = `
-                <div class="alert alert-danger">
-                    <h4><i class="fas fa-exclamation-triangle"></i> Connection Error</h4>
-                    <p>Unable to connect to the API server at ${API_URL}</p>
-                    <p>Please make sure the JSON server is running at port 3000.</p>
-                    <button class="btn btn-primary mt-2" onclick="window.location.reload()">
-                        Retry Connection
-                    </button>
-                </div>
-            `;
-        });
+    // Show loading indicator and test API availability
+    showLoadingIndicator();
+    testAndLoadData();
 });
+
+function setupScrollEffects() {
+    // Handle navbar appearance on scroll
+    const navbar = document.querySelector('.navbar.bg-glass');
+    const backToTopBtn = document.getElementById('backToTop');
+    
+    if (navbar) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+                
+                // Show back to top button after scrolling down
+                if (backToTopBtn) {
+                    backToTopBtn.classList.add('visible');
+                }
+            } else {
+                navbar.classList.remove('scrolled');
+                
+                // Hide back to top button when near the top
+                if (backToTopBtn) {
+                    backToTopBtn.classList.remove('visible');
+                }
+            }
+        });
+    }
+    
+    // Set up back to top button click handler
+    if (backToTopBtn) {
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+    
+    // Handle smooth scroll for internal links
+    setupSmoothScrolling();
+}
+
+/**
+ * Sets up smooth scrolling for links and scroll indicators
+ */
+function setupSmoothScrolling() {
+    // Set up scroll indicator
+    const scrollIndicator = document.getElementById('scrollIndicator');
+    if (scrollIndicator) {
+        scrollIndicator.addEventListener('click', () => {
+            const dinnersSection = document.querySelector('.dinners-layout');
+            if (dinnersSection) {
+                dinnersSection.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // Fallback to available dinners section
+                const availableDinners = document.getElementById('available-dinners');
+                if (availableDinners) {
+                    availableDinners.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    }
+    
+    // Handle smooth scroll for internal links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            if (this.getAttribute('href') !== '#') {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    const headerOffset = 80;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+    });
+}
 
 function setupEventListeners() {
     // Filter chip selection
     document.querySelectorAll('.filter-chip').forEach(chip => {
         chip.addEventListener('click', () => {
-            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            appState.filter = chip.textContent.toLowerCase();
-            filterDinners();
+            // Don't re-filter if already active
+            if (chip.classList.contains('active')) return;
+            
+            // Play subtle click feedback animation
+            chip.classList.add('filter-click');
+            setTimeout(() => chip.classList.remove('filter-click'), 300);
+            
+            // Apply filter with animation
+            applyFilterWithAnimation(chip);
         });
     });
     
@@ -101,10 +164,125 @@ function setupEventListeners() {
     }
 }
 
+/**
+ * Apply filter with smooth animation
+ * @param {HTMLElement} chip - The filter chip that was clicked
+ */
+/**
+ * Applies filter with animation effects
+ * - Updates the active filter state
+ * - Animates filter chips and count badges
+ * - Applies fade transition to dinner cards container
+ * - Updates the filter indicator text
+ * - Applies actual dinner filtering after animation completes
+ * 
+ * @param {HTMLElement} chip - The filter chip element clicked
+ */
+function applyFilterWithAnimation(chip) {
+    const container = document.getElementById('availableDinnersContainer');
+    if (!container) return;
+    
+    // Handle active state transition with visual feedback
+    document.querySelectorAll('.filter-chip').forEach(c => {
+        c.style.transition = 'all 0.3s ease';
+        c.classList.remove('active');
+    });
+    
+    // Show filter indicator text
+    const filterIndicator = document.getElementById('currentFilterIndicator');
+    if (filterIndicator) {
+        filterIndicator.textContent = chip.textContent.trim();
+        filterIndicator.style.opacity = '0';
+        setTimeout(() => {
+            filterIndicator.style.opacity = '1';
+            filterIndicator.style.transform = 'translateY(0)';
+        }, 100);
+    }
+    
+    // Ensure the color transition is smooth
+    setTimeout(() => {
+        chip.classList.add('active');
+    }, 50);
+    
+    // Update filter state
+    appState.filter = chip.getAttribute('data-filter');
+    
+    // Apply fade transition
+    container.style.opacity = '0.6';
+    container.style.transform = 'translateY(5px)';
+    
+    // Add count badge animation if present
+    const countBadge = chip.querySelector('.count-badge');
+    if (countBadge) {
+        countBadge.classList.add('badge-pulse');
+        setTimeout(() => countBadge.classList.remove('badge-pulse'), 1000);
+    }
+    
+    // Apply the actual filter after a brief delay for animation
+    setTimeout(() => {
+        filterAvailableDinners(appState.filter);
+        container.style.opacity = '1';
+        container.style.transform = 'translateY(0)';
+    }, 300);
+}
+
+/**
+ * Shows loading indicator in the dinners container
+ */
+function showLoadingIndicator() {
+    document.getElementById('availableDinnersContainer').innerHTML = `
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <div>Loading dinners...</div>
+        </div>
+    `;
+}
+
+/**
+ * Tests API connectivity and loads data if successful
+ * - Performs an initial API connectivity test
+ * - Provides user feedback if API is unavailable
+ * - Proceeds to data loading if API is accessible
+ */
+function testAndLoadData() {
+    console.log('Testing API availability...');
+    fetch(`${API_URL}/dinners`)
+        .then(response => {
+            console.log('API test response:', response.status);
+            if (!response.ok) throw new Error('API not accessible');
+            return response.json();
+        })
+        .then(data => {
+            console.log('API test successful, received data:', data);
+            // API is working, load data properly
+            setTimeout(loadDinners, 300);
+        })
+        .catch(error => {
+            console.error('API test failed:', error);
+            // Show error message to user
+            document.getElementById('availableDinnersContainer').innerHTML = `
+                <div class="alert alert-danger">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Connection Error</h4>
+                    <p>Unable to connect to the API server at ${API_URL}</p>
+                    <p>Please make sure the JSON server is running at port 3000.</p>
+                    <button class="btn btn-primary mt-2" onclick="window.location.reload()">
+                        Retry Connection
+                    </button>
+                </div>
+            `;
+        });
+}
+
+/**
+ * Loads dinner data from the API with comprehensive error handling
+ * - Tries multiple API endpoints until one works
+ * - Falls back to mock data if all API endpoints fail
+ * - Provides detailed error messages and recovery options
+ */
 async function loadDinners() {
     try {
         console.log('Starting dinner data load process');
-        document.getElementById('dinnersContainer').innerHTML = `
+        document.getElementById('availableDinnersContainer').innerHTML = `
             <div class="loading-container">
                 <div class="loading-spinner"></div>
                 <div>Loading dinners...</div>
@@ -201,6 +379,9 @@ async function loadDinners() {
         
         renderUserDinners(appState.myDinners);
         renderAvailableDinners(appState.availableDinners);
+        
+        // Update filter counts based on all available dinners
+        updateFilterCounts([...appState.myDinners, ...appState.availableDinners]);
     } catch (error) {
         console.error('Error loading dinners:', error);
         
@@ -226,7 +407,7 @@ async function loadDinners() {
                     console.log('Direct fetch successful, data:', data);
                     // If direct fetch worked, we might have a CORS issue
                     errorDetails += ' (CORS issue detected)';
-                    document.getElementById('dinnersContainer').innerHTML = `
+                    document.getElementById('availableDinnersContainer').innerHTML = `
                         <div class="alert alert-warning">
                             <h5><i class="fas fa-exclamation-triangle"></i> CORS Issue Detected</h5>
                             <p>Your browser blocked the API request due to CORS policy.</p>
@@ -251,7 +432,7 @@ async function loadDinners() {
         }
         
         // Display error on UI
-        document.getElementById('dinnersContainer').innerHTML = `
+        document.getElementById('availableDinnersContainer').innerHTML = `
             <div class="alert alert-warning">
                 <h5><i class="fas fa-exclamation-triangle"></i> Connection Error</h5>
                 <p>Unable to load dinners: ${errorDetails}</p>
@@ -292,34 +473,38 @@ function renderUserDinners(dinners) {
         `;
         return;
     }
-    
+
     container.innerHTML = dinners.map(dinner => `
         <div class="dinner-card" data-id="${dinner.id}" onclick="showDinnerDetail(${dinner.id})">
             <img src="${dinner.image}" class="dinner-image" alt="${dinner.title}" 
                  onerror="this.src='https://images.unsplash.com/photo-1555939594-58d7cb561ad1'">
             <div class="dinner-info">
-                <div class="dinner-card-content">
-                    <div>
-                        <h3 class="dinner-title">${dinner.title}</h3>
-                        <div class="dinner-meta">
-                            <span><i class="fas fa-calendar"></i> ${formatDate(dinner.date)}</span>
-                            <span><i class="fas fa-clock"></i> ${formatTime(dinner.time)}</span>
-                            <span class="badge bg-${dinner.category === 'vegetarian' || dinner.category === 'vegan' ? 'success' : 'secondary'} rounded-pill">
-                                ${dinner.category}
-                            </span>
+                <h3 class="dinner-title">${dinner.title}</h3>
+                <div class="dinner-meta">
+                    <span><i class="fas fa-calendar"></i> ${formatDate(dinner.date)}</span>
+                    <span><i class="fas fa-clock"></i> ${formatTime(dinner.time)}</span>
+                    <span class="badge bg-${dinner.category === 'vegetarian' || dinner.category === 'vegan' ? 'success' : 'secondary'} rounded-pill">
+                        ${dinner.category}
+                    </span>
+                </div>
+                <p class="dinner-description">${dinner.description}</p>
+                
+                <div class="dinner-status mt-2 mb-2">
+                    <span class="badge bg-primary rounded-pill">
+                        <i class="fas fa-users me-1"></i> 
+                        ${Math.floor(Math.random() * 5)} reservations
+                    </span>
+                </div>
+                
+                <div class="dinner-footer">
+                    <div class="dinner-price-tag">$${dinner.price} per person</div>
+                    <div class="dinner-host">
+                        <div class="host-avatar">
+                            ${dinner.hostName.split(' ').map(n => n[0]).join('')}
                         </div>
-                        <p class="dinner-description mt-2">${dinner.description}</p>
-                    </div>
-                    <div class="dinner-footer">
-                        <div class="dinner-price-tag">$${dinner.price} per person</div>
-                        <div class="dinner-host">
-                            <div class="host-avatar">
-                                ${dinner.hostName.split(' ').map(n => n[0]).join('')}
-                            </div>
-                            <div>
-                                <div class="small">Hosted by</div>
-                                <div class="fw-medium">${dinner.hostName}</div>
-                            </div>
+                        <div>
+                            <div class="small">Hosted by</div>
+                            <div class="fw-medium">${dinner.hostName}</div>
                         </div>
                     </div>
                 </div>
@@ -329,7 +514,7 @@ function renderUserDinners(dinners) {
 }
 
 function renderAvailableDinners(dinners) {
-    const container = document.getElementById('dinnersContainer');
+    const container = document.getElementById('availableDinnersContainer');
     if (dinners.length === 0) {
         container.innerHTML = `
             <div class="text-center py-4">
@@ -363,30 +548,86 @@ function renderAvailableDinners(dinners) {
             <img src="${dinner.image}" class="dinner-image" alt="${dinner.title}"
                  onerror="this.src='https://images.unsplash.com/photo-1555939594-58d7cb561ad1'">
             <div class="dinner-info">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="dinner-title">${dinner.title}</h3>
-                    <span class="badge bg-${dinner.category === 'vegetarian' || dinner.category === 'vegan' ? 'success' : 'secondary'} rounded-pill">${dinner.category}</span>
-                </div>
-                <div class="dinner-time">
-                    ${formatDate(dinner.date)}, ${formatTime(dinner.time)}
+                <h3 class="dinner-title">${dinner.title}</h3>
+                <div class="dinner-meta">
+                    <span><i class="fas fa-calendar"></i> ${formatDate(dinner.date)}</span>
+                    <span><i class="fas fa-clock"></i> ${formatTime(dinner.time)}</span>
+                    <span class="badge bg-${dinner.category === 'vegetarian' || dinner.category === 'vegan' ? 'success' : 'secondary'} rounded-pill">
+                        ${dinner.category}
+                    </span>
                 </div>
                 <p class="dinner-description">${dinner.description}</p>
-                <div class="d-flex justify-content-between align-items-center mt-2">
-                    <span class="dinner-price">$${dinner.price}</span>
-                    <span class="small">${getRelativeDate(dinner.date)} ${availabilityBadge}</span>
-                </div>
                 
                 <!-- Capacity indicator -->
-                <div class="progress mt-2" style="height: 4px;">
+                <div class="progress mt-2 mb-2" style="height: 4px;">
                     <div class="progress-bar ${percentFull > 75 ? 'bg-danger' : 'bg-success'}" style="width: ${percentFull}%"></div>
                 </div>
-                <div class="d-flex justify-content-between mt-1">
-                    <small class="text-muted">${dinner.hostName}</small>
-                    <small class="text-muted">${remainingSeats} of ${dinner.maxGuests} spots left</small>
+                <div class="d-flex justify-content-between mt-1 mb-2 small">
+                    <span class="text-muted">${remainingSeats} of ${dinner.maxGuests} spots left</span>
+                    <span>${availabilityBadge}</span>
+                </div>
+                
+                <div class="dinner-footer">
+                    <div class="dinner-price-tag">$${dinner.price} per person</div>
+                    <div class="dinner-host">
+                        <div class="host-avatar">
+                            ${dinner.hostName.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                            <div class="small">Hosted by</div>
+                            <div class="fw-medium">${dinner.hostName}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    `}).join('');
+        </div>`;
+    }).join('');
+}
+
+// Update filter chip counts based on the current data
+function updateFilterCounts(dinners) {
+    // Calculate counts for each filter
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    
+    const counts = {
+        'all': dinners.length,
+        'today': dinners.filter(dinner => {
+            const dinnerDate = new Date(dinner.date);
+            dinnerDate.setHours(0,0,0,0);
+            return dinnerDate.getTime() === today.getTime();
+        }).length,
+        'this-week': dinners.filter(dinner => {
+            const dinnerDate = new Date(dinner.date);
+            return dinnerDate >= today && dinnerDate <= nextWeek;
+        }).length,
+        'vegetarian': dinners.filter(dinner => 
+            (dinner.category && dinner.category.toLowerCase() === 'vegetarian') || 
+            (dinner.category && dinner.category.toLowerCase() === 'vegan')
+        ).length,
+        'under-20': dinners.filter(dinner => 
+            dinner.price && parseFloat(dinner.price) < 20
+        ).length
+    };
+    
+    // Update the count badges
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        const filter = chip.getAttribute('data-filter');
+        const countBadge = chip.querySelector('.count-badge');
+        if (countBadge && counts[filter] !== undefined) {
+            countBadge.textContent = counts[filter];
+            
+            // Add visual feedback for empty categories
+            if (counts[filter] === 0 && filter !== 'all') {
+                chip.classList.add('empty-filter');
+            } else {
+                chip.classList.remove('empty-filter');
+            }
+        }
+    });
 }
 
 // Reset all filters
@@ -394,7 +635,7 @@ function resetFilters() {
     appState.filter = 'all';
     document.querySelectorAll('.filter-chip').forEach(chip => {
         chip.classList.remove('active');
-        if (chip.textContent.toLowerCase() === 'all') {
+        if (chip.getAttribute('data-filter') === 'all') {
             chip.classList.add('active');
         }
     });
@@ -487,7 +728,7 @@ function filterDinners() {
             const today = new Date().toISOString().split('T')[0];
             filtered = filtered.filter(dinner => dinner.date === today);
             break;
-        case 'this week':
+        case 'this-week':
             const weekStart = new Date();
             const weekEnd = new Date();
             weekEnd.setDate(weekEnd.getDate() + 7);
@@ -498,11 +739,11 @@ function filterDinners() {
             break;
         case 'vegetarian':
             filtered = filtered.filter(dinner => 
-                dinner.category === 'vegetarian' || 
-                dinner.category === 'vegan');
+                dinner.category.toLowerCase() === 'vegetarian' || 
+                dinner.category.toLowerCase() === 'vegan');
             break;
-        case 'under $20':
-            filtered = filtered.filter(dinner => dinner.price < 20);
+        case 'under-20':
+            filtered = filtered.filter(dinner => parseFloat(dinner.price) < 20);
             break;
     }
     
@@ -762,16 +1003,60 @@ function renderAttendees(reservations) {
     return html;
 }
 
-// Reservation functionality
+// Modern multi-step reservation functionality
 function setupReservationModal(dinnerId) {
     document.getElementById('reservationDinnerId').value = dinnerId;
     
     // Get the dinner details
     const dinner = [...appState.myDinners, ...appState.availableDinners].find(d => d.id == dinnerId);
     
+    // Reset to first step when opening the modal
+    const steps = document.querySelectorAll('.reservation-step');
+    steps.forEach(step => step.classList.remove('active'));
+    document.getElementById('step1').classList.add('active');
+    
+    // Reset progress indicators
+    const progressSteps = document.querySelectorAll('.step');
+    progressSteps.forEach((step, index) => {
+        if (index === 0) {
+            step.classList.add('active');
+            step.classList.remove('complete');
+        } else {
+            step.classList.remove('active', 'complete');
+        }
+    });
+    
+    // Reset progress line
+    const progressLine = document.querySelector('.progress-line');
+    if (progressLine) {
+        progressLine.className = 'progress-line';
+    }
+    
     if (dinner) {
+        // Set host information
+        document.getElementById('summaryDinnerHost').textContent = dinner.hostName;
+        document.getElementById('hostName').textContent = dinner.hostName;
+        
+        // Format the dinner date and time
+        const date = new Date(dinner.date);
+        const options = { weekday: 'long', month: 'long', day: 'numeric' };
+        const formattedDate = date.toLocaleDateString('en-US', options);
+        document.getElementById('summaryDateTime').textContent = `${formattedDate} at ${dinner.time}`;
+        
         // Set price in the modal
         document.getElementById('reservationPrice').textContent = `$${dinner.price}`;
+        
+        // Set the dinner image if available
+        if (dinner.image) {
+            const foodImages = document.querySelectorAll('.food-image, .illustration-image');
+            foodImages.forEach(img => {
+                if (img.tagName === 'IMG') {
+                    img.src = dinner.image;
+                } else {
+                    img.style.backgroundImage = `url('${dinner.image}')`;
+                }
+            });
+        }
         
         // Calculate and set spots left
         axios.get(`${API_URL}/reservations?dinnerId=${dinnerId}`)
@@ -780,17 +1065,15 @@ function setupReservationModal(dinnerId) {
                 const reservedSeats = reservations.reduce((total, res) => total + res.seats, 0);
                 const spotsLeft = dinner.maxGuests - reservedSeats;
                 
-                document.getElementById('spotsLeft').textContent = spotsLeft;
+                const spotsElements = document.querySelectorAll('#spotsLeft');
+                spotsElements.forEach(el => {
+                    el.textContent = spotsLeft;
+                });
                 
                 // Limit max seats in the input
-                const seatsInput = document.querySelector('input[name="seats"]');
-                seatsInput.max = spotsLeft;
-                
-                // Update total when seats change
-                seatsInput.addEventListener('input', () => {
-                    const seats = parseInt(seatsInput.value) || 0;
-                    document.getElementById('reservationTotal').textContent = 
-                        `$${(seats * dinner.price).toFixed(2)}`;
+                const seatsInputs = document.querySelectorAll('input[name="seats"]');
+                seatsInputs.forEach(input => {
+                    input.max = spotsLeft;
                 });
                 
                 // Initialize total
@@ -806,30 +1089,102 @@ function setupReservationModal(dinnerId) {
 async function handleReservation(e) {
     e.preventDefault();
     
+    // Gather dietary preferences from checkboxes
+    const preferenceCheckboxes = document.querySelectorAll('input[name="preferences[]"]:checked');
+    const preferences = Array.from(preferenceCheckboxes).map(checkbox => checkbox.value);
+    
+    // Create reservation data object
     const formData = {
         dinnerId: parseInt(e.target.dinnerId.value),
         guestName: e.target.guestName.value,
+        email: e.target.email.value,
+        phone: e.target.phone ? e.target.phone.value : '',
         seats: parseInt(e.target.seats.value),
         notes: e.target.notes.value,
+        preferences: preferences,
         createdAt: new Date().toISOString()
     };
     
+    // Show loading state
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+    
     try {
-        await axios.post(`${API_URL}/reservations`, formData);
+        // Send reservation request
+        const response = await axios.post(`${API_URL}/reservations`, formData);
         
-        // Close modal and reset form
-        bootstrap.Modal.getInstance(document.getElementById('reservationModal')).hide();
-        e.target.reset();
+        // Show success message with animation
+        const modal = document.getElementById('reservationModal');
+        const modalContent = modal.querySelector('.modal-content');
         
-        // Refresh dinner detail if we're on the detail screen
-        if (appState.currentScreen === 'detail' && appState.selectedDinner.id === formData.dinnerId) {
-            showDinnerDetail(formData.dinnerId);
-        } else {
-            // Otherwise just reload dinners list
+        // Add success class for styling
+        modalContent.classList.add('reservation-success');
+        
+        // Create and show success message
+        const successDiv = document.createElement('div');
+        successDiv.className = 'reservation-success-message';
+        successDiv.innerHTML = `
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Reservation Confirmed!</h3>
+            <p>We've sent the details to your email. Looking forward to seeing you!</p>
+            <button class="btn btn-primary mt-3" data-bs-dismiss="modal">Done</button>
+        `;
+        
+        // Replace modal content with success message
+        const modalBody = modal.querySelector('.modal-body');
+        const modalHeader = modal.querySelector('.modal-header');
+        const modalFooter = modal.querySelector('.step-navigation');
+        
+        // Save original content to restore later
+        const originalBody = modalBody.innerHTML;
+        const originalHeader = modalHeader.innerHTML;
+        
+        // Hide header and footer
+        modalHeader.style.display = 'none';
+        modalFooter.style.display = 'none';
+        
+        // Show success message
+        modalBody.innerHTML = '';
+        modalBody.appendChild(successDiv);
+        
+        // Restore modal when closed
+        modal.addEventListener('hidden.bs.modal', function resetModal() {
+            // Remove event listener to prevent multiple registrations
+            modal.removeEventListener('hidden.bs.modal', resetModal);
+            
+            // Reset modal content
+            modalHeader.style.display = '';
+            modalFooter.style.display = '';
+            modalBody.innerHTML = originalBody;
+            modalHeader.innerHTML = originalHeader;
+            modalContent.classList.remove('reservation-success');
+            
+            // Reset form
+            e.target.reset();
+            
+            // Reset button
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
+            
+            // Refresh dinners data
             loadDinners();
-        }
+        }, { once: true });
         
-        // Show a success message
+    } catch (error) {
+        console.error('Error creating reservation:', error);
+        
+        // Show error message
+        showNotification('Error creating reservation. Please try again.', 'error');
+        
+        // Reset button
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+    }
+}
         alert('Your reservation has been confirmed!');
     } catch (error) {
         console.error('Error creating reservation:', error);
@@ -1217,7 +1572,13 @@ async function editDinner(dinnerId) {
     }
 }
 
-// Additional helper functions for API access
+/**
+ * Alternative API connection method using direct localhost connection
+ * - Used as a fallback when normal API connection methods fail
+ * - Attempts direct connection to localhost:3000
+ * - Handles rendering data if successful
+ * - Provides fallback to mock data if direct connection fails
+ */
 function loadDinnersWithLocalhost() {
     // Force using localhost protocol with fetch
     fetch('http://localhost:3000/dinners', {
@@ -1246,7 +1607,7 @@ function loadDinnersWithLocalhost() {
     })
     .catch(error => {
         console.error('Direct localhost fetch failed:', error);
-        document.getElementById('dinnersContainer').innerHTML = `
+        document.getElementById('availableDinnersContainer').innerHTML = `
             <div class="alert alert-danger">
                 <h5><i class="fas fa-times-circle"></i> API Connection Failed</h5>
                 <p>Could not connect to the API server even with direct method.</p>
@@ -1339,6 +1700,11 @@ function loadMockData() {
     renderAvailableDinners(appState.availableDinners);
 }
 
+/**
+ * Attempts to reconnect to the API server after a failure
+ * - Removes any warning banners from the UI
+ * - Initiates a fresh attempt to load data from API endpoints
+ */
 function reconnectToApi() {
     // Remove the warning banner
     const warningBanner = document.querySelector('.alert-warning');
