@@ -1,0 +1,5 @@
+[HPM] Proxy created: /  -> http://localhost:3000
+[HPM] Proxy rewrite rule created: "^/api" ~> ""
+Proxy server running at http://localhost:8090
+API requests will be forwarded to http://localhost:3000
+✓ Successfully connected to JSON server (4 dinners found)

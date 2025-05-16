@@ -6,29 +6,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buber Dinner</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="./css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="./assets/css/style.css" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">Buber Dinner</a>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDinnerModal">
+    <!-- Main App Container -->
+    <div id="app">
+        <!-- Home Screen -->
+        <div id="homeScreen">
+            <!-- Header -->
+            <header class="navbar navbar-dark">
+                <div class="container">
+                    <h1 class="navbar-brand mb-0">Buber <span class="accent">Dinner</span></h1>
+                </div>
+            </header>
+            
+            <!-- Your Dinners Section -->
+            <div class="container mt-3">
+                <h2 class="mb-2">Your <span class="accent">Dinners</span></h2>
+                <p class="text-muted small">Dinners you have created</p>
+                
+                <div id="userDinnersContainer">
+                    <!-- User's dinners will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Available Dinners Section -->
+            <div class="container mt-4">
+                <h2 class="mb-2">Available <span class="accent">Dinners</span></h2>
+                
+                <!-- Filter chips -->
+                <div class="filters">
+                    <span class="filter-chip active">All</span>
+                    <span class="filter-chip">Today</span>
+                    <span class="filter-chip">This Week</span>
+                    <span class="filter-chip">Vegetarian</span>
+                    <span class="filter-chip">Under $20</span>
+                </div>
+                
+                <div id="dinnersContainer">
+                    <!-- Available dinners will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Create Dinner Button -->
+            <button class="create-dinner-btn" data-bs-toggle="modal" data-bs-target="#createDinnerModal">
                 Create New Dinner
             </button>
         </div>
-    </nav>
+        
+        <!-- Dinner Detail Screen (initially hidden) -->
+        <div id="dinnerDetailScreen" class="dinner-detail d-none">
+            <!-- Will be populated dynamically -->
+        </div>
+    </div>
 
     <!-- Main Content -->
-    <main class="container my-5">
-        <div class="row" id="dinnersContainer">
-            <!-- Dinners will be loaded here -->
+    <main class="container my-5 d-none">
+        <div class="row" id="oldDinnersContainer">
+            <!-- Old dinners container - keeping for reference -->
         </div>
     </main>
 
     <!-- Modals (Create Dinner & Reservation) -->
-    <!-- Include modals for form submissions -->
     <div class="modal fade" id="createDinnerModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -50,7 +94,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Price ($)</label>
-                                <input type="number" class="form-control" name="price" min="0" required>
+                                <input type="number" class="form-control" name="price" min="0" step="0.01" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Max Guests</label>
@@ -65,15 +109,39 @@
 
                         <div class="mb-3">
                             <label class="form-label">Menu Image</label>
-                            <div class="input-group">
+                            <div class="input-group mb-2">
                                 <input type="text" class="form-control" id="imageSearch"
                                     placeholder="Search for images (e.g., 'pizza')">
                                 <button class="btn btn-outline-secondary" type="button"
-                                    id="searchImageBtn">Search</button>
-                                <input type="hidden" name="image" id="selectedImage">
+                                    id="searchImageBtn" onclick="searchUnsplashImages()">Search</button>
                             </div>
-                            <div id="imageResults" class="d-flex flex-wrap gap-2 mt-2"></div>
-                            <div id="imagePreview" class="mt-2"></div>
+                            <div class="form-text mb-2">Search for images or select from the examples below</div>
+                            <input type="hidden" name="image" id="selectedImage">
+                            <div id="imagePreview" class="mt-2 text-center"></div>
+                            <div id="imageResults" class="d-flex flex-wrap gap-2 mt-3 justify-content-center"></div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="provideSampleImages()">
+                                Show Sample Images
+                            </button>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="isPublic" id="isPublic" checked>
+                                <label class="form-check-label" for="isPublic">
+                                    Show to public (anyone can see and join)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Dinner Category</label>
+                            <select class="form-select" name="category">
+                                <option value="casual">Casual</option>
+                                <option value="gourmet">Gourmet</option>
+                                <option value="vegetarian">Vegetarian</option>
+                                <option value="vegan">Vegan</option>
+                                <option value="dessert">Dessert</option>
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -85,9 +153,55 @@
         </div>
     </div>
 
+    <!-- Reservation Modal -->
+    <div class="modal fade" id="reservationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reserve a Seat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="reservationForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="dinnerId" id="reservationDinnerId">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Your Name</label>
+                            <input type="text" class="form-control" name="guestName" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Number of Seats</label>
+                            <input type="number" class="form-control" name="seats" min="1" value="1" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Any Notes (allergies, preferences)</label>
+                            <textarea class="form-control" name="notes" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-grow-1">
+                                <div><strong>Price per seat:</strong> <span id="reservationPrice">$0</span></div>
+                                <div><strong>Total:</strong> <span id="reservationTotal">$0</span></div>
+                            </div>
+                            <div>
+                                <span class="badge bg-success">Spots left: <span id="spotsLeft">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Confirm Reservation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="./js/app.js"></script>
+    <script src="./assets/js/app.js"></script>
 </body>
 
 </html>

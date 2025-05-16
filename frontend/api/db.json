@@ -1,15 +1,98 @@
 {
   "dinners": [
     {
-      "id": 1,
+      "id": "1",
       "title": "Pizza & Jazz",
-      "date": "2023-09-14",
+      "date": "2025-05-20",
       "time": "18:00",
-      "description": "Join us for a night of Pizza and Jazz! After dinner we'll continue at BRB bar",
+      "description": "Join us for a night of Pizza and Jazz! After dinner we'll continue at BRB bar 🍻",
       "price": 25,
       "maxGuests": 12,
-      "image": "https://source.unsplash.com/random/?pizza"
+      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591",
+      "hostId": 1,
+      "hostName": "Demo User",
+      "isPublic": true,
+      "category": "casual",
+      "createdAt": "2025-05-10T12:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "title": "Dinner @ Tiffany's",
+      "date": "2025-05-22",
+      "time": "19:00",
+      "description": "Hi, I'm Tiffany! I'll be your chef on Sunday ;) 🍲",
+      "price": 35,
+      "maxGuests": 5,
+      "image": "https://images.unsplash.com/photo-1547592180-85f173990554",
+      "hostId": 2,
+      "hostName": "Tiffany Chen",
+      "isPublic": true,
+      "category": "gourmet",
+      "createdAt": "2025-05-12T14:30:00.000Z"
+    },
+    {
+      "id": "3",
+      "title": "Vegan Delight",
+      "date": "2025-05-18",
+      "time": "18:30",
+      "description": "Join us for a plant-based feast! All ingredients are organic and locally-sourced.",
+      "price": 22,
+      "maxGuests": 8,
+      "image": "https://images.unsplash.com/photo-1543362906-acfc16c67564",
+      "hostId": 3,
+      "hostName": "Michael Green",
+      "isPublic": true,
+      "category": "vegan",
+      "createdAt": "2025-05-11T10:15:00.000Z"
+    },
+    {
+      "id": "4",
+      "title": "Breakfast for Dinner",
+      "date": "2025-05-25",
+      "time": "20:00",
+      "description": "Who says you can't have pancakes and mimosas for dinner? Come enjoy breakfast favorites at night!",
+      "price": 18,
+      "maxGuests": 10,
+      "image": "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0",
+      "hostId": 4,
+      "hostName": "Sarah Johnson",
+      "isPublic": true,
+      "category": "casual",
+      "createdAt": "2025-05-14T09:45:00.000Z"
     }
   ],
-  "reservations": []
+  "reservations": [
+    {
+      "id": 1,
+      "dinnerId": 1,
+      "guestName": "Mike",
+      "seats": 1,
+      "notes": "No allergies",
+      "createdAt": "2025-05-13T15:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "dinnerId": 1,
+      "guestName": "Maria",
+      "seats": 1,
+      "notes": "Vegetarian",
+      "createdAt": "2025-05-13T12:45:00.000Z"
+    },
+    {
+      "id": 3,
+      "dinnerId": 1,
+      "guestName": "Josh",
+      "seats": 1,
+      "notes": "",
+      "createdAt": "2025-05-14T09:20:00.000Z"
+    },
+    {
+      "id": 4,
+      "dinnerId": 2,
+      "guestName": "Alex",
+      "seats": 2,
+      "notes": "One person has a nut allergy",
+      "createdAt": "2025-05-14T14:10:00.000Z"
+    }
+  ]
 }

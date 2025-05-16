@@ -1,5 +1,15 @@
 {
   "dependencies": {
-    "axios": "^1.9.0"
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^2.0.9"
+  },
+  "scripts": {
+    "start": "http-server -p 8080 --cors",
+    "api": "json-server --watch api/db.json --port 3000",
+    "proxy": "node proxy.js",
+    "dev": "concurrently \"npm run api\" \"npm run start\"",
+    "start-all": "./start-services.sh"
   }
 }
