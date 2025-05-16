@@ -100,9 +100,9 @@
                     <!-- Your Dinners Section -->
                     <div class="section-column">
                         <section id="my-dinners" class="section-dinners">
-                            <div class="section-header mb-4">
-                                <h2 class="h3 mb-2">Your <span class="text-primary">Hosted Dinners</span></h2>
-                                <p class="text-muted">Manage and track the dinners you're hosting</p>
+                            <div class="section-header">
+                                <h2>Your <span class="text-primary">Hosted Dinners</span></h2>
+                                <p>Manage and track the dinners you're hosting</p>
                             </div>
                             
                             <div id="userDinnersContainer" class="dinners-grid">
@@ -114,40 +114,38 @@
                     <!-- Available Dinners Section -->
                     <div class="section-column">
                         <section id="available-dinners" class="section-dinners">
-                            <div class="section-header mb-4">
-                                <h2 class="h3 mb-2">Discover <span class="text-primary">Available Dinners</span></h2>
-                                <p class="text-muted">Find unique dining experiences in your community</p>
+                            <div class="section-header">
+                                <h2>Discover <span class="text-primary">Available Dinners</span></h2>
+                                <p>Find unique dining experiences in your community</p>
                             </div>
                         
-                        <!-- Enhanced Filter Section -->
+                        <!-- Filter Dinners Section Matching Design -->
                         <div class="filter-section mb-4">
-                            <h5>
+                            <div class="filter-header">
                                 <i class="fas fa-filter"></i> Filter Dinners
-                                <span class="filter-indicator">
-                                    <span id="currentFilterIndicator">All</span>
-                                </span>
-                            </h5>
+                                <div class="filter-showing">Showing: <span id="currentFilterIndicator">All</span></div>
+                            </div>
                             <div class="filter-container">
-                                <span class="filter-chip active" data-filter="all">
-                                    <i class="fas fa-globe-americas me-1"></i>All
+                                <div class="filter-chip active" data-filter="all">
+                                    <i class="fas fa-globe-americas"></i> All
                                     <span class="count-badge">12</span>
-                                </span>
-                                <span class="filter-chip" data-filter="today">
-                                    <i class="fas fa-calendar-day me-1"></i>Today
+                                </div>
+                                <div class="filter-chip" data-filter="today">
+                                    <i class="fas fa-calendar-day"></i> Today
                                     <span class="count-badge">4</span>
-                                </span>
-                                <span class="filter-chip" data-filter="this-week">
-                                    <i class="fas fa-calendar-week me-1"></i>Week
+                                </div>
+                                <div class="filter-chip" data-filter="week">
+                                    <i class="fas fa-calendar-week"></i> Week
                                     <span class="count-badge">8</span>
-                                </span>
-                                <span class="filter-chip" data-filter="vegetarian">
-                                    <i class="fas fa-leaf me-1"></i>Vegetarian
+                                </div>
+                                <div class="filter-chip" data-filter="vegetarian">
+                                    <i class="fas fa-leaf"></i> Vegetarian
                                     <span class="count-badge">5</span>
-                                </span>
-                                <span class="filter-chip" data-filter="under-20">
-                                    <i class="fas fa-dollar-sign me-1"></i>Under $20
+                                </div>
+                                <div class="filter-chip" data-filter="under-20">
+                                    <i class="fas fa-dollar-sign"></i> Under $20
                                     <span class="count-badge">6</span>
-                                </span>
+                                </div>
                             </div>
                         </div>
                         
@@ -160,28 +158,34 @@
             </div>
             
             <!-- Features Section -->
-            <section class="features-section py-5 bg-light">
+            <section class="features-section py-5">
                 <div class="container">
                     <div class="row g-4">
                         <div class="col-md-4">
-                            <div class="feature-card text-center p-4">
-                                <i class="fas fa-users fa-2x text-primary mb-3"></i>
-                                <h3 class="h5">Meet New People</h3>
-                                <p class="text-muted">Connect with food lovers in your community</p>
+                            <div class="feature-card">
+                                <div class="feature-icon blue">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <h3>Meet New People</h3>
+                                <p>Connect with food lovers in your community</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="feature-card text-center p-4">
-                                <i class="fas fa-utensils fa-2x text-primary mb-3"></i>
-                                <h3 class="h5">Share Your Cuisine</h3>
-                                <p class="text-muted">Showcase your cooking skills and cultural dishes</p>
+                            <div class="feature-card">
+                                <div class="feature-icon orange">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <h3>Share Your Cuisine</h3>
+                                <p>Showcase your cooking skills and cultural dishes</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="feature-card text-center p-4">
-                                <i class="fas fa-heart fa-2x text-primary mb-3"></i>
-                                <h3 class="h5">Create Memories</h3>
-                                <p class="text-muted">Build lasting friendships over shared meals</p>
+                            <div class="feature-card">
+                                <div class="feature-icon red">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <h3>Create Memories</h3>
+                                <p>Build lasting friendships over shared meals</p>
                             </div>
                         </div>
                     </div>

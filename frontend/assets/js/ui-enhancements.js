@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Enhance reservation modal experience
     enhanceReservationModal();
+    
+    // Enhance filter chips functionality
+    enhanceFilterChips();
 });
 
 /**
@@ -471,6 +474,82 @@ function enhanceReservationModal() {
     
     // Initialize multi-step reservation functionality
     enhanceMultiStepReservation();
+}
+
+/**
+ * Enhance the filter chips functionality
+ * - Adds click interactions to filter dinner cards
+ * - Updates the current filter indicator
+ * - Provides visual feedback during filter selection
+ */
+function enhanceFilterChips() {
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const currentFilterIndicator = document.getElementById('currentFilterIndicator');
+    
+    if (!filterChips.length) return;
+    
+    filterChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            // Remove active class from all chips
+            filterChips.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked chip
+            this.classList.add('active');
+            
+            // Add ripple effect for visual feedback
+            this.classList.add('filter-click');
+            setTimeout(() => {
+                this.classList.remove('filter-click');
+            }, 600);
+            
+            // Update filter indicator
+            const filterType = this.getAttribute('data-filter');
+            const filterText = this.textContent.trim().split(' ')[0]; // Get first word of filter text
+            if (currentFilterIndicator) {
+                currentFilterIndicator.textContent = filterText;
+            }
+            
+            // Filter dinner cards (if needed)
+            filterDinnerCards(filterType);
+        });
+    });
+    
+    // Function to filter dinner cards based on filter type
+    function filterDinnerCards(filterType) {
+        const dinnerCards = document.querySelectorAll('.dinner-card');
+        if (!dinnerCards.length) return;
+        
+        // Add filtering class to container for transition effect
+        const dinnersGrid = document.querySelector('.dinners-grid');
+        if (dinnersGrid) {
+            dinnersGrid.classList.add('filtering');
+        }
+        
+        // Apply filtering after a small delay for animation
+        setTimeout(() => {
+            dinnerCards.forEach(card => {
+                if (filterType === 'all') {
+                    card.style.display = '';
+                    card.classList.add('show');
+                } else {
+                    // Check if card matches filter
+                    const matchesFilter = card.getAttribute('data-' + filterType) === 'true';
+                    if (matchesFilter) {
+                        card.style.display = '';
+                        card.classList.add('show');
+                    } else {
+                        card.style.display = 'none';
+                        card.classList.remove('show');
+                    }
+                }
+            });
+            
+            // Remove filtering class after transition
+            if (dinnersGrid) {
+                dinnersGrid.classList.remove('filtering');
+            }
+        }, 300);
+    }
 }
 
 // Add styles for reservation modal animations
