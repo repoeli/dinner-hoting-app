@@ -133,7 +133,13 @@ function setupEventListeners() {
             
             // Play subtle click feedback animation
             chip.classList.add('filter-click');
-            setTimeout(() => chip.classList.remove('filter-click'), 300);
+            
+            // Create a more noticeable hover effect
+            chip.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                chip.style.transform = '';
+                chip.classList.remove('filter-click');
+            }, 350);
             
             // Apply filter with animation
             applyFilterWithAnimation(chip);
@@ -188,11 +194,20 @@ function applyFilterWithAnimation(chip) {
         c.classList.remove('active');
     });
     
+    // Animate the count badge with pulse effect
+    const countBadge = chip.querySelector('.count-badge');
+    if (countBadge) {
+        countBadge.classList.add('badge-pulse');
+        setTimeout(() => countBadge.classList.remove('badge-pulse'), 600);
+    }
+    
     // Show filter indicator text
     const filterIndicator = document.getElementById('currentFilterIndicator');
     if (filterIndicator) {
-        filterIndicator.textContent = chip.textContent.trim();
+        const filterText = chip.textContent.trim().split(/\s+/)[0]; // Get first word only
+        filterIndicator.textContent = filterText;
         filterIndicator.style.opacity = '0';
+        filterIndicator.style.transform = 'translateY(-3px)';
         setTimeout(() => {
             filterIndicator.style.opacity = '1';
             filterIndicator.style.transform = 'translateY(0)';
@@ -202,25 +217,29 @@ function applyFilterWithAnimation(chip) {
     // Ensure the color transition is smooth
     setTimeout(() => {
         chip.classList.add('active');
+        chip.classList.add('filter-click');
+        setTimeout(() => {
+            chip.classList.remove('filter-click');
+        }, 600);
     }, 50);
     
     // Update filter state
     appState.filter = chip.getAttribute('data-filter');
     
     // Apply fade transition
-    container.style.opacity = '0.6';
+    container.style.opacity = '0.7';
     container.style.transform = 'translateY(5px)';
     
     // Add count badge animation if present
-    const countBadge = chip.querySelector('.count-badge');
-    if (countBadge) {
-        countBadge.classList.add('badge-pulse');
-        setTimeout(() => countBadge.classList.remove('badge-pulse'), 1000);
+    const badgeElement = chip.querySelector('.count-badge');
+    if (badgeElement) {
+        badgeElement.classList.add('badge-pulse');
+        setTimeout(() => badgeElement.classList.remove('badge-pulse'), 1000);
     }
     
     // Apply the actual filter after a brief delay for animation
     setTimeout(() => {
-        filterAvailableDinners(appState.filter);
+        filterDinners();
         container.style.opacity = '1';
         container.style.transform = 'translateY(0)';
     }, 300);
@@ -633,13 +652,19 @@ function updateFilterCounts(dinners) {
 // Reset all filters
 function resetFilters() {
     appState.filter = 'all';
-    document.querySelectorAll('.filter-chip').forEach(chip => {
-        chip.classList.remove('active');
-        if (chip.getAttribute('data-filter') === 'all') {
-            chip.classList.add('active');
-        }
-    });
-    filterDinners();
+    const allChip = document.querySelector('.filter-chip[data-filter="all"]');
+    
+    if (allChip) {
+        applyFilterWithAnimation(allChip);
+    } else {
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.classList.remove('active');
+            if (chip.getAttribute('data-filter') === 'all') {
+                chip.classList.add('active');
+            }
+        });
+        filterDinners();
+    }
 }
 
 // Helper functions for formatting dates and times
@@ -673,6 +698,17 @@ function formatDate(dateStr) {
         month: 'short', 
         day: 'numeric' 
     }).format(date);
+}
+
+// Helper function to check if a date is within next week
+function isDateInNextWeek(date) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    
+    return date >= today && date <= nextWeek;
 }
 
 function formatTime(timeStr) {
@@ -725,13 +761,17 @@ function filterDinners() {
     
     switch(appState.filter) {
         case 'today':
+            // Get today's date in YYYY-MM-DD format
             const today = new Date().toISOString().split('T')[0];
             filtered = filtered.filter(dinner => dinner.date === today);
             break;
         case 'this-week':
+            // Get date range for this week (today to 7 days ahead)
             const weekStart = new Date();
-            const weekEnd = new Date();
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekEnd.getDate() + 7);
+            
             filtered = filtered.filter(dinner => {
                 const dinnerDate = new Date(dinner.date);
                 return dinnerDate >= weekStart && dinnerDate <= weekEnd;
@@ -739,15 +779,35 @@ function filterDinners() {
             break;
         case 'vegetarian':
             filtered = filtered.filter(dinner => 
-                dinner.category.toLowerCase() === 'vegetarian' || 
-                dinner.category.toLowerCase() === 'vegan');
+                dinner.category && (
+                    dinner.category.toLowerCase() === 'vegetarian' || 
+                    dinner.category.toLowerCase() === 'vegan'
+                )
+            );
             break;
         case 'under-20':
-            filtered = filtered.filter(dinner => parseFloat(dinner.price) < 20);
+            filtered = filtered.filter(dinner => 
+                dinner.price && parseFloat(dinner.price) < 20
+            );
             break;
     }
     
-    renderAvailableDinners(filtered);
+    // Add a small visual delay when no results are found
+    if (filtered.length === 0) {
+        const container = document.getElementById('availableDinnersContainer');
+        if (container) {
+            container.style.opacity = '0.7';
+            container.style.transform = 'translateY(5px)';
+            
+            setTimeout(() => {
+                renderAvailableDinners(filtered);
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 300);
+        }
+    } else {
+        renderAvailableDinners(filtered);
+    }
 }
 
 // Navigation and UI functions
@@ -1174,6 +1234,9 @@ async function handleReservation(e) {
             loadDinners();
         }, { once: true });
         
+        // Show confirmation popup
+        alert('Your reservation has been confirmed!');
+        
     } catch (error) {
         console.error('Error creating reservation:', error);
         
@@ -1183,12 +1246,6 @@ async function handleReservation(e) {
         // Reset button
         submitButton.disabled = false;
         submitButton.innerHTML = originalText;
-    }
-}
-        alert('Your reservation has been confirmed!');
-    } catch (error) {
-        console.error('Error creating reservation:', error);
-        alert('Error creating reservation. Please try again.');
     }
 }
 
@@ -1712,6 +1769,93 @@ function reconnectToApi() {
     
     // Try to load real data again
     loadDinners();
+}
+
+// Notification function to show alerts with different styles
+function showNotification(message, type = 'info') {
+    // Fallback to alert if no HTML-based notification can be shown
+    if (!document.body) {
+        alert(message);
+        return;
+    }
+    
+    // Create notification container if it doesn't exist
+    let notificationsContainer = document.getElementById('notificationsContainer');
+    if (!notificationsContainer) {
+        notificationsContainer = document.createElement('div');
+        notificationsContainer.id = 'notificationsContainer';
+        notificationsContainer.style.position = 'fixed';
+        notificationsContainer.style.top = '20px';
+        notificationsContainer.style.right = '20px';
+        notificationsContainer.style.zIndex = '9999';
+        document.body.appendChild(notificationsContainer);
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.backgroundColor = type === 'error' ? '#f8d7da' : '#d1e7dd';
+    notification.style.color = type === 'error' ? '#721c24' : '#0f5132';
+    notification.style.padding = '15px 20px';
+    notification.style.marginBottom = '10px';
+    notification.style.borderRadius = '5px';
+    notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+    notification.style.minWidth = '300px';
+    notification.style.position = 'relative';
+    notification.style.transition = 'all 0.3s ease';
+    notification.style.transform = 'translateX(100%)';
+    notification.style.opacity = '0';
+    
+    // Add icon based on type
+    const icon = type === 'error' ? 'exclamation-circle' : 'check-circle';
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <i class="fas fa-${icon}" style="margin-right: 10px; font-size: 1.2rem;"></i>
+            <div>${message}</div>
+            <button style="margin-left: auto; background: none; border: none; cursor: pointer; font-size: 1rem; opacity: 0.7;">×</button>
+        </div>
+    `;
+    
+    // Add to container
+    notificationsContainer.appendChild(notification);
+    
+    // Animate entrance
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+        notification.style.opacity = '1';
+    }, 10);
+    
+    // Set up auto-close
+    const closeTimeout = setTimeout(() => {
+        closeNotification(notification);
+    }, 5000);
+    
+    // Set up manual close button
+    const closeButton = notification.querySelector('button');
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            clearTimeout(closeTimeout);
+            closeNotification(notification);
+        });
+    }
+    
+    // Fallback to alert in case the DOM manipulation fails
+    if (type === 'error') {
+        console.error(message);
+        if (!notification.parentNode) {
+            alert(message);
+        }
+    }
+    
+    function closeNotification(element) {
+        element.style.transform = 'translateX(100%)';
+        element.style.opacity = '0';
+        setTimeout(() => {
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }, 300);
+    }
 }
 
 // Expose the functions to window for button click handlers
